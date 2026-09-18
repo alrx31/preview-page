@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PIXEL BREACH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d1020;
+    --panel:#191f38;
+    --panel-2:#232b4d;
+    --line:#3b466f;
+    --ink:#cbd6f2;
+    --dim:#7684ad;
+    --gold:#ffcb47;
+    --hot:#ff5c57;
+    --cool:#4fd6ff;
+    --good:#5ce67f;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg);
+    background-image:
+      linear-gradient(rgba(255,255,255,.028) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.028) 1px, transparent 1px);
+    background-size:32px 32px;
+    color:var(--ink);
+    font-family:"Press Start 2P", ui-monospace, "Courier New", monospace;
+    font-size:10px;
+    line-height:1.9;
+    padding:24px 16px 48px;
+    -webkit-font-smoothing:none;
+  }
+  .wrap{max-width:720px;margin:0 auto}
+  header{text-align:center;margin-bottom:22px}
+  h1{
+    font-size:26px;
+    line-height:1.3;
+    margin:0 0 12px;
+    color:var(--gold);
+    letter-spacing:2px;
+    text-shadow:3px 3px 0 #000, 6px 6px 0 rgba(255,92,87,.35);
+  }
+  .tag{color:var(--dim);font-size:9px;letter-spacing:1px}
+  .plate{
+    background:var(--panel);
+    padding:14px;
+    box-shadow:0 0 0 4px #000, 0 0 0 8px var(--line), 0 12px 0 8px rgba(0,0,0,.45);
+    margin-bottom:34px;
+  }
+  .hud{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+  .stat{
+    flex:1 1 90px;
+    background:var(--panel-2);
+    padding:8px;
+    box-shadow:inset 0 0 0 2px #000;
+  }
+  .stat b{display:block;color:var(--dim);font-size:8px;margin-bottom:6px;letter-spacing:1px}
+  .stat span{font-size:12px;color:#fff}
+  .stat.gold span{color:var(--gold)}
+  .bars{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+  .bar{display:flex;align-items:center;gap:8px}
+  .bar em{font-style:normal;color:var(--dim);font-size:8px;width:56px}
+  .track{flex:1;height:14px;background:#0a0d1a;box-shadow:inset 0 0 0 2px #000}
+  .fill{height:100%;width:100%;transition:width .08s linear}
+  #coreFill{background:var(--hot)}
+  #energyFill{background:var(--cool)}
+  .screen-box{position:relative;line-height:0;background:#000;box-shadow:inset 0 0 0 2px #000}
+  canvas{
+    width:100%;
+    height:auto;
+    display:block;
+    image-rendering:pixelated;
+    image-rendering:crisp-edges;
+    cursor:crosshair;
+    touch-action:manipulation;
+  }
+  .shop{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:12px}
+  button{
+    font-family:inherit;
+    font-size:9px;
+    line-height:1.8;
+    color:var(--ink);
+    background:var(--panel-2);
+    border:0;
+    padding:10px 8px;
+    text-align:left;
+    cursor:pointer;
+    box-shadow:0 0 0 2px #000, 4px 4px 0 0 #000;
+    transition:transform .05s steps(1), box-shadow .05s steps(1);
+  }
+  button:hover:not(:disabled){background:#2d3862;color:#fff}
+  button:active:not(:disabled){transform:translate(4px,4px);box-shadow:0 0 0 2px #000}
+  button:disabled{opacity:.42;cursor:not-allowed}
+  button .price{display:block;color:var(--gold);font-size:8px;margin-top:4px}
+  button .lv{color:var(--dim)}
+  .controls{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+  .controls button{flex:1 1 140px;text-align:center}
+  .keys{margin-top:14px;color:var(--dim);font-size:8px;line-height:2.2}
+  .keys kbd{
+    background:var(--panel-2);
+    color:var(--ink);
+    padding:2px 6px;
+    box-shadow:0 0 0 2px #000;
+    font-family:inherit;
+  }
+  section h2{
+    font-size:12px;
+    color:var(--cool);
+    letter-spacing:1px;
+    margin:0 0 12px;
+    text-shadow:2px 2px 0 #000;
+  }
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+  .card{background:var(--panel);padding:14px;box-shadow:0 0 0 4px #000, 0 0 0 6px var(--line)}
+  .card h3{margin:0 0 8px;font-size:10px;color:var(--gold)}
+  .card p{margin:0;color:var(--dim);font-size:8px;line-height:2.1}
+  footer{margin-top:34px;text-align:center;color:var(--dim);font-size:8px}
+  @media (max-width:520px){
+    h1{font-size:18px}
+    body{padding:16px 10px 34px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>PIXEL BREACH</h1>
+    <div class="tag">no towers. just you, a cursor and a dying core.</div>
+  </header>
+
+  <div class="plate">
+    <div class="hud">
+      <div class="stat"><b>WAVE</b><span id="hudWave">1</span></div>
+      <div class="stat"><b>SCORE</b><span id="hudScore">0</span></div>
+      <div class="stat gold"><b>SCRAP</b><span id="hudGold">0</span></div>
+      <div class="stat"><b>BEST</b><span id="hudBest">0</span></div>
+    </div>
+
+    <div class="bars">
+      <div class="bar"><em>CORE</em><div class="track"><div class="fill" id="coreFill"></div></div></div>
+      <div class="bar"><em>ENERGY</em><div class="track"><div class="fill" id="energyFill"></div></div></div>
+    </div>
+
+    <div class="screen-box">
+      <canvas id="screen" width="640" height="384"></canvas>
+    </div>
+
+    <div class="shop">
+      <button id="buyPower"></button>
+      <button id="buyCell"></button>
+      <button id="buyBlast"></button>
+      <button id="buyRepair"></button>
+    </div>
+
+    <div class="controls">
+      <button id="btnBlast">BLAST</button>
+      <button id="btnRestart">RESTART</button>
+    </div>
+
+    <div class="keys">
+      <kbd>CLICK</kbd> zap the nearest creep &nbsp;&nbsp; <kbd>SPACE</kbd> shockwave &nbsp;&nbsp; <kbd>R</kbd> restart
+    </div>
+  </div>
+
+  <section>
+    <h2>HOW IT WORKS</h2>
+    <div class="cards">
+      <div class="card">
+        <h3>YOU ARE THE TOWER</h3>
+        <p>Nothing is built on the map. Every shot comes from your own cursor and drains the energy cell, so aim beats spam.</p>
+      </div>
+      <div class="card">
+        <h3>THE LINE LEAKS</h3>
+        <p>Creeps walk the trench toward the core. Anything that reaches it tears out hull points. Twenty is all you get.</p>
+      </div>
+      <div class="card">
+        <h3>SPEND THE SCRAP</h3>
+        <p>Kills drop scrap. Between waves turn it into damage, faster recharge, a wider shockwave, or hull repairs.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>BUILT FOR THE BROWSER &middot; NO ASSETS &middot; NO DEPENDENCIES</footer>
+</div>
+
+<script>
+(function(){
+  const canvas = document.getElementById('screen');
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+
+  const TILE = 32, COLS = 20, ROWS = 12;
+  const W = COLS * TILE, H = ROWS * TILE;
+  const FONT = '"Press Start 2P", monospace';
+
+  const WAYPOINTS = [[-1,2],[5,2],[5,8],[11,8],[11,3],[16,3],[16,9],[18,9]];
+  const PATH = WAYPOINTS.map(p => ({x:p[0]*TILE+TILE/2, y:p[1]*TILE+TILE/2}));
+  const CORE = PATH[PATH.length-1];
+
+  const pathTiles = new Set();
+  for (let i=0;i<WAYPOINTS.length-1;i++){
+    let [ax,ay] = WAYPOINTS[i], [bx,by] = WAYPOINTS[i+1];
+    const dx = Math.sign(bx-ax), dy = Math.sign(by-ay);
+    let x = ax, y = ay;
+    pathTiles.add(x+','+y);
+    while (x!==bx || y!==by){ x+=dx; y+=dy; pathTiles.add(x+','+y); }
+  }
+
+  const TYPES = {
+    grunt:  {hp:26, speed:36, gold:3,  score:10, size:18, body:'#6fd97a', dark:'#2f7a3c', leak:1},
+    runner: {hp:18, speed:68, gold:4,  score:14, size:14, body:'#5cc8ff', dark:'#2b6ea6', leak:1},
+    brute:  {hp:90, speed:22, gold:10, score:32, size:26, body:'#ff7a5c', dark:'#9c3322', leak:3}
+  };
+
+  const UPGRADES = {
+    power:  {lv:0, base:15, mul:1.65, name:'POWER',  desc:'+6 shot dmg'},
+    cell:   {lv:0, base:12, mul:1.6,  name:'CELL',   desc:'+8 recharge'},
+    blast:  {lv:0, base:20, mul:1.7,  name:'BLAST',  desc:'+radius +dmg'},
+    repair: {lv:0, base:16, mul:1.35, name:'REPAIR', desc:'+4 hull'}
+  };
+
+  const ui = {
+    wave: document.getElementById('hudWave'),
+    score: document.getElementById('hudScore'),
+    gold: document.getElementById('hudGold'),
+    best: document.getElementById('hudBest'),
+    core: document.getElementById('coreFill'),
+    energy: document.getElementById('energyFill'),
+    power: document.getElementById('buyPower'),
+    cell: document.getElementById('buyCell'),
+    blast: document.getElementById('buyBlast'),
+    repair: document.getElementById('buyRepair')
+  };
+
+  let G, pointer = {x:W/2, y:H/2}, best = 0;
+
+  try { best = parseInt(localStorage.getItem('pixelbreach.best')||'0', 10) || 0; } catch(e){ best = 0; }
+
+  function reset(){
+    for (const k in UPGRADES) UPGRADES[k].lv = 0;
+    G = {
+      state:'intro',
+      wave:0,
+      score:0,
+      gold:0,
+      coreHp:20,
+      coreMax:20,
+      energy:100,
+      energyMax:100,
+      regen:22,
+      shotCost:12,
+      shotDmg:10,
+      blastCost:55,
+      blastDmg:26,
+      blastRadius:64,
+      enemies:[],
+      parts:[],
+      zaps:[],
+      rings:[],
+      floats:[],
+      queue:[],
+      spawnTimer:0,
+      prepTimer:0,
+      shake:0,
+      time:0,
+      banner:'',
+      bannerTimer:0
+    };
+    syncUI();
+  }
+
+  function cost(u){ return Math.round(u.base * Math.pow(u.mul, u.lv)); }
+
+  function buy(key){
+    const u = UPGRADES[key], c = cost(u);
+    if (G.state === 'over' || G.gold < c) return;
+    G.gold -= c;
+    u.lv++;
+    if (key === 'power') G.shotDmg += 6;
+    if (key === 'cell'){ G.regen += 8; G.energyMax += 10; G.energy += 10; }
+    if (key === 'blast'){ G.blastRadius += 14; G.blastDmg += 12; }
+    if (key === 'repair'){ G.coreMax += 4; G.coreHp = Math.min(G.coreMax, G.coreHp + 4); }
+    float(CORE.x, CORE.y - 26, '-' + c, '#ffcb47');
+    syncUI();
+  }
+
+  function buildWave(n){
+    const list = [];
+    const grunts = 4 + Math.floor(n * 1.6);
+    const runners = n >= 2 ? Math.floor(n * 0.9) : 0;
+    const brutes = n >= 4 ? Math.floor((n - 2) / 2) : 0;
+    for (let i=0;i<grunts;i++) list.push('grunt');
+    for (let i=0;i<runners;i++) list.push('runner');
+    for (let i=0;i<brutes;i++) list.push('brute');
+    for (let i=list.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [list[i], list[j]] = [list[j], list[i]];
+    }
+    return list;
+  }
+
+  function startWave(){
+    G.wave++;
+    G.queue = buildWave(G.wave);
+    G.spawnTimer = 0;
+    G.state = 'wave';
+    banner('WAVE ' + G.wave);
+    syncUI();
+  }
+
+  function banner(text){ G.banner = text; G.bannerTimer = 1.6; }
+
+  function spawn(kind){
+    const t = TYPES[kind];
+    const hp = Math.round(t.hp * (1 + (G.wave - 1) * 0.2));
+    G.enemies.push({
+      kind, hp, maxHp:hp,
+      speed: t.speed * (1 + (G.wave - 1) * 0.02),
+      x: PATH[0].x, y: PATH[0].y,
+      seg: 0,
+      hit: 0,
+      wob: Math.random() * 6.28
+    });
+  }
+
+  function float(x, y, text, color){
+    G.floats.push({x, y, text, color, life:0.9});
+  }
+
+  function burst(x, y, color, n){
+    for (let i=0;i<n;i++){
+      const a = Math.random() * Math.PI * 2, s = 30 + Math.random() * 90;
+      G.parts.push({x, y, vx:Math.cos(a)*s, vy:Math.sin(a)*s, life:0.3+Math.random()*0.35, color});
+    }
+  }
+
+  function damage(e, amount){
+    e.hp -= amount;
+    e.hit = 0.12;
+    if (e.hp <= 0){
+      const t = TYPES[e.kind];
+      G.gold += t.gold;
+      G.score += t.score;
+      burst(e.x, e.y, t.body, 12);
+      float(e.x, e.y - 12, '+' + t.gold, '#ffcb47');
+      e.dead = true;
+      syncUI();
+    }
+  }
+
+  function shoot(x, y){
+    if (G.state !== 'wave' && G.state !== 'prep') return;
+    if (G.energy < G.shotCost) return;
+    let target = null, bestD = Infinity;
+    for (const e of G.enemies){
+      if (e.dead) continue;
+      const reach = TYPES[e.kind].size * 0.7 + 10;
+      const dx = e.x - x, dy = e.y - y, d = dx*dx + dy*dy;
+      if (d <= reach * reach && d < bestD){ bestD = d; target = e; }
+    }
+    if (!target) return;
+    G.energy -= G.shotCost;
+    G.zaps.push({x1:x, y1:y, x2:target.x, y2:target.y, life:0.12});
+    burst(target.x, target.y, '#fff2a8', 4);
+    damage(target, G.shotDmg);
+  }
+
+  function blast(){
+    if (G.state !== 'wave' && G.state !== 'prep') return;
+    if (G.energy < G.blastCost) return;
+    G.energy -= G.blastCost;
+    const x = pointer.x, y = pointer.y, r = G.blastRadius;
+    G.rings.push({x, y, r:8, max:r, life:0.45});
+    G.shake = Math.max(G.shake, 5);
+    for (const e of G.enemies){
+      if (e.dead) continue;
+      const dx = e.x - x, dy = e.y - y;
+      if (dx*dx + dy*dy <= r*r) damage(e, G.blastDmg);
+    }
+  }
+
+  function leak(e){
+    const t = TYPES[e.kind];
+    G.coreHp -= t.leak;
+    G.shake = 9;
+    burst(CORE.x, CORE.y, '#ff5c57', 16);
+    e.dead = true;
+    if (G.coreHp <= 0){
+      G.coreHp = 0;
+      G.state = 'over';
+      banner('CORE LOST');
+      if (G.score > best){
+        best = G.score;
+        try { localStorage.setItem('pixelbreach.best', String(best)); } catch(err){}
+      }
+    }
+    syncUI();
+  }
+
+  function update(dt){
+    G.time += dt;
+    if (G.shake > 0) G.shake = Math.max(0, G.shake - dt * 22);
+    if (G.bannerTimer > 0) G.bannerTimer -= dt;
+
+    for (let i=G.parts.length-1;i>=0;i--){
+      const p = G.parts[i];
+      p.life -= dt;
+      p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 140 * dt;
+      if (p.life <= 0) G.parts.splice(i,1);
+    }
+    for (let i=G.floats.length-1;i>=0;i--){
+      const f = G.floats[i];
+      f.life -= dt; f.y -= 22 * dt;
+      if (f.life <= 0) G.floats.splice(i,1);
+    }
+    for (let i=G.zaps.length-1;i>=0;i--){
+      G.zaps[i].life -= dt;
+      if (G.zaps[i].life <= 0) G.zaps.splice(i,1);
+    }
+    for (let i=G.rings.length-1;i>=0;i--){
+      const r = G.rings[i];
+      r.life -= dt;
+      r.r += (r.max - r.r) * Math.min(1, dt * 12);
+      if (r.life <= 0) G.rings.splice(i,1);
+    }
+
+    if (G.state === 'intro' || G.state === 'over') return;
+
+    G.energy = Math.min(G.energyMax, G.energy + G.regen * dt);
+
+    if (G.state === 'prep'){
+      G.prepTimer -= dt;
+      if (G.prepTimer <= 0) startWave();
+    }
+
+    if (G.state === 'wave' && G.queue.length){
+      G.spawnTimer -= dt;
+      if (G.spawnTimer <= 0){
+        spawn(G.queue.shift());
+        G.spawnTimer = Math.max(0.3, 1.05 - G.wave * 0.045);
+      }
+    }
+
+    for (const e of G.enemies){
+      if (e.dead) continue;
+      if (e.hit > 0) e.hit -= dt;
+      let move = e.speed * dt;
+      while (move > 0 && e.seg < PATH.length - 1){
+        const n = PATH[e.seg + 1];
+        const dx = n.x - e.x, dy = n.y - e.y;
+        const d = Math.hypot(dx, dy);
+        if (d <= move){ e.x = n.x; e.y = n.y; e.seg++; move -= d; }
+        else { e.x += dx / d * move; e.y += dy / d * move; move = 0; }
+      }
+      if (e.seg >= PATH.length - 1) leak(e);
+    }
+
+    G.enemies = G.enemies.filter(e => !e.dead);
+
+    if (G.state === 'wave' && !G.queue.length && !G.enemies.length){
+      G.state = 'prep';
+      G.prepTimer = 4;
+      G.gold += 5 + G.wave;
+      banner('WAVE CLEAR  +' + (5 + G.wave));
+      syncUI();
+    }
+  }
+
+  function drawMap(){
+    for (let y=0;y<ROWS;y++){
+      for (let x=0;x<COLS;x++){
+        const onPath = pathTiles.has(x+','+y);
+        if (onPath) ctx.fillStyle = (x+y) % 2 ? '#3a3050' : '#342b48';
+        else ctx.fillStyle = (x+y) % 2 ? '#151b30' : '#131829';
+        ctx.fillRect(x*TILE, y*TILE, TILE, TILE);
+        if (!onPath && (x*7 + y*13) % 11 === 0){
+          ctx.fillStyle = '#1d2540';
+          ctx.fillRect(x*TILE + 8, y*TILE + 12, 4, 4);
+          ctx.fillRect(x*TILE + 18, y*TILE + 20, 4, 4);
+        }
+      }
+    }
+    ctx.fillStyle = '#4a3d68';
+    for (const key of pathTiles){
+      const [x,y] = key.split(',').map(Number);
+      if (!pathTiles.has(x+','+(y-1))) ctx.fillRect(x*TILE, y*TILE, TILE, 3);
+      if (!pathTiles.has(x+','+(y+1))) ctx.fillRect(x*TILE, y*TILE+TILE-3, TILE, 3);
+      if (!pathTiles.has((x-1)+','+y)) ctx.fillRect(x*TILE, y*TILE, 3, TILE);
+      if (!pathTiles.has((x+1)+','+y)) ctx.fillRect(x*TILE+TILE-3, y*TILE, 3, TILE);
+    }
+  }
+
+  function drawCore(){
+    const pulse = Math.sin(G.time * 4) * 2;
+    const hurt = G.coreHp / G.coreMax;
+    ctx.fillStyle = '#0a0d1a';
+    ctx.fillRect(CORE.x - 18, CORE.y - 18, 36, 36);
+    ctx.fillStyle = '#3b466f';
+    ctx.fillRect(CORE.x - 16, CORE.y - 16, 32, 32);
+    ctx.fillStyle = hurt > 0.5 ? '#4fd6ff' : hurt > 0.25 ? '#ffcb47' : '#ff5c57';
+    ctx.fillRect(CORE.x - 10 - pulse/2, CORE.y - 10 - pulse/2, 20 + pulse, 20 + pulse);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(CORE.x - 4, CORE.y - 4, 8, 8);
+  }
+
+  function drawEnemy(e){
+    const t = TYPES[e.kind];
+    const s = t.size;
+    const bob = Math.sin(G.time * 9 + e.wob) * 1.5;
+    const x = Math.round(e.x - s/2), y = Math.round(e.y - s/2 + bob);
+    ctx.fillStyle = 'rgba(0,0,0,.35)';
+    ctx.fillRect(x + 2, e.y + s/2 - 3, s - 4, 4);
+    ctx.fillStyle = e.hit > 0 ? '#ffffff' : t.dark;
+    ctx.fillRect(x, y, s, s);
+    ctx.fillStyle = e.hit > 0 ? '#ffffff' : t.body;
+    ctx.fillRect(x + 3, y + 3, s - 6, s - 6);
+    ctx.fillStyle = '#0d1020';
+    ctx.fillRect(x + 4, y + s/2 - 3, 3, 3);
+    ctx.fillRect(x + s - 7, y + s/2 - 3, 3, 3);
+    const w = s + 4;
+    ctx.fillStyle = '#0a0d1a';
+    ctx.fillRect(e.x - w/2, y - 8, w, 4);
+    ctx.fillStyle = '#5ce67f';
+    ctx.fillRect(e.x - w/2 + 1, y - 7, (w - 2) * Math.max(0, e.hp / e.maxHp), 2);
+  }
+
+  function drawCursor(){
+    const x = Math.round(pointer.x), y = Math.round(pointer.y);
+    const ready = G.energy >= G.shotCost;
+    ctx.fillStyle = ready ? '#ffcb47' : '#5b6488';
+    ctx.fillRect(x - 9, y - 1, 6, 2);
+    ctx.fillRect(x + 3, y - 1, 6, 2);
+    ctx.fillRect(x - 1, y - 9, 2, 6);
+    ctx.fillRect(x - 1, y + 3, 2, 6);
+  }
+
+  function text(str, x, y, color, size, align){
+    ctx.font = (size || 10) + 'px ' + FONT;
+    ctx.textAlign = align || 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#000';
+    ctx.fillText(str, x + 2, y + 2);
+    ctx.fillStyle = color;
+    ctx.fillText(str, x, y);
+  }
+
+  function draw(){
+    ctx.save();
+    if (G.shake > 0){
+      ctx.translate((Math.random()-0.5) * G.shake, (Math.random()-0.5) * G.shake);
+    }
+    drawMap();
+    drawCore();
+
+    for (const e of G.enemies) drawEnemy(e);
+
+    for (const z of G.zaps){
+      ctx.strokeStyle = 'rgba(255,255,255,' + (z.life / 0.12) + ')';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(z.x1, z.y1);
+      ctx.lineTo(z.x2, z.y2);
+      ctx.stroke();
+    }
+    for (const r of G.rings){
+      ctx.strokeStyle = 'rgba(79,214,255,' + Math.max(0, r.life / 0.45) + ')';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    for (const p of G.parts){
+      ctx.fillStyle = p.color;
+      ctx.fillRect(Math.round(p.x), Math.round(p.y), 3, 3);
+    }
+    for (const f of G.floats){
+      ctx.globalAlpha = Math.max(0, f.life);
+      text(f.text, f.x, f.y, f.color, 8);
+      ctx.globalAlpha = 1;
+    }
+
+    drawCursor();
+    ctx.restore();
+
+    if (G.state === 'prep'){
+      text('NEXT WAVE IN ' + Math.ceil(G.prepTimer), W/2, 24, '#7684ad', 10);
+    }
+    if (G.bannerTimer > 0 && G.state !== 'over'){
+      ctx.globalAlpha = Math.min(1, G.bannerTimer);
+      text(G.banner, W/2, H/2 - 40, '#ffcb47', 18);
+      ctx.globalAlpha = 1;
+    }
+    if (G.state === 'intro'){
+      ctx.fillStyle = 'rgba(13,16,32,.86)';
+      ctx.fillRect(0, 0, W, H);
+      text('PIXEL BREACH', W/2, H/2 - 46, '#ffcb47', 22);
+      text('CLICK A CREEP TO ZAP IT', W/2, H/2 + 2, '#cbd6f2', 10);
+      text('SPACE FIRES A SHOCKWAVE', W/2, H/2 + 26, '#cbd6f2', 10);
+      text('CLICK ANYWHERE TO BEGIN', W/2, H/2 + 64, '#4fd6ff', 10);
+    }
+    if (G.state === 'over'){
+      ctx.fillStyle = 'rgba(13,16,32,.88)';
+      ctx.fillRect(0, 0, W, H);
+      text('CORE LOST', W/2, H/2 - 46, '#ff5c57', 22);
+      text('WAVE ' + G.wave + '   SCORE ' + G.score, W/2, H/2 + 4, '#cbd6f2', 10);
+      text('BEST ' + best, W/2, H/2 + 30, '#ffcb47', 10);
+      text('PRESS R TO TRY AGAIN', W/2, H/2 + 68, '#4fd6ff', 10);
+    }
+  }
+
+  function shopButton(el, key){
+    const u = UPGRADES[key], c = cost(u);
+    el.innerHTML = u.name + ' <span class="lv">LV' + u.lv + '</span><span class="price">' + c + ' SCRAP</span>';
+    el.disabled = G.gold < c || G.state === 'over';
+    el.title = u.desc;
+  }
+
+  function syncUI(){
+    ui.wave.textContent = G.wave;
+    ui.score.textContent = G.score;
+    ui.gold.textContent = G.gold;
+    ui.best.textContent = best;
+    shopButton(ui.power, 'power');
+    shopButton(ui.cell, 'cell');
+    shopButton(ui.blast, 'blast');
+    shopButton(ui.repair, 'repair');
+  }
+
+  function syncBars(){
+    ui.core.style.width = (G.coreHp / G.coreMax * 100) + '%';
+    ui.energy.style.width = (G.energy / G.energyMax * 100) + '%';
+  }
+
+  function toCanvas(ev){
+    const r = canvas.getBoundingClientRect();
+    return {
+      x: (ev.clientX - r.left) * (W / r.width),
+      y: (ev.clientY - r.top) * (H / r.height)
+    };
+  }
+
+  canvas.addEventListener('pointermove', ev => { pointer = toCanvas(ev); });
+
+  canvas.addEventListener('pointerdown', ev => {
+    ev.preventDefault();
+    pointer = toCanvas(ev);
+    if (G.state === 'intro'){ G.state = 'prep'; G.prepTimer = 1.5; return; }
+    if (G.state === 'over'){ reset(); G.state = 'prep'; G.prepTimer = 1.5; return; }
+    shoot(pointer.x, pointer.y);
+  });
+
+  window.addEventListener('keydown', ev => {
+    if (ev.code === 'Space'){
+      ev.preventDefault();
+      if (G.state === 'intro'){ G.state = 'prep'; G.prepTimer = 1.5; return; }
+      blast();
+    }
+    if (ev.key === 'r' || ev.key === 'R'){
+      reset();
+      G.state = 'prep';
+      G.prepTimer = 1.5;
+    }
+  });
+
+  ui.power.addEventListener('click', () => buy('power'));
+  ui.cell.addEventListener('click', () => buy('cell'));
+  ui.blast.addEventListener('click', () => buy('blast'));
+  ui.repair.addEventListener('click', () => buy('repair'));
+  document.getElementById('btnBlast').addEventListener('click', () => {
+    if (G.state === 'intro'){ G.state = 'prep'; G.prepTimer = 1.5; return; }
+    blast();
+  });
+  document.getElementById('btnRestart').addEventListener('click', () => {
+    reset();
+    G.state = 'prep';
+    G.prepTimer = 1.5;
+  });
+
+  let last = performance.now();
+  let goldShown = -1;
+  function frame(now){
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    update(dt);
+    draw();
+    syncBars();
+    if (G.gold !== goldShown){ goldShown = G.gold; syncUI(); }
+    requestAnimationFrame(frame);
+  }
+
+  reset();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
